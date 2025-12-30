@@ -1,0 +1,68 @@
+RUN GUIDELINES for University Sessions project
+
+1) Prepare Python environment
+
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+
+2) Initialize git repository (one-time)
+
+   bash scripts/git_init_commit.sh
+
+3) Create PostgreSQL database and owner (requires psql access)
+
+   # Usage: scripts/init_db.sh <dbname> <owner>
+   bash scripts/init_db.sh haykdb haykuser
+
+   Note: script creates role with password 'changeme'. Change this in production.
+
+4) Configure DATABASE_URL environment variable
+
+   export DATABASE_URL="postgresql+psycopg2://haykuser:changeme@localhost:5432/haykdb"
+
+5) Apply Alembic migrations
+
+   alembic upgrade head
+
+6) Run the FastAPI app
+
+   uvicorn app.main:app --reload
+
+   The API will be available at: http://127.0.0.1:8000
+   Interactive docs: http://127.0.0.1:8000/docs
+
+7) Populate data via REST (optional)
+
+   python scripts/populate_via_api.py
+
+8) Useful endpoints (examples)
+
+   - Create group: POST /groups/ (body: code, course, num_students, faculty_id)
+   - Search groups (multi-WHERE + sort): GET /groups/search/?faculty_id=1&min_students=20&sort_by=code
+   - Create subject: POST /subjects/ (body: name, num_hours, department_id, extra)
+   - Search subjects (regex over extra->>'notes'): GET /subjects/search-regex/?pattern=^Intro.*
+   - Search subjects (trigram over extra->>'notes'): GET /subjects/search-trgm/?query=basic
+   - Joined sessions (JOIN): GET /sessions/details/
+   - Promote groups (non-trivial UPDATE): PUT /groups/promote/?current_course=1
+   - Students per faculty (GROUP BY): GET /reports/students-per-faculty/
+
+9) Notes and troubleshooting
+
+   - Ensure PostgreSQL is running and reachable from this host.
+   - If `alembic` can't find `DATABASE_URL`, export it in the same shell session before running.
+   - To inspect migrations: look under the `alembic/versions/` folder.
+   - To change DB credentials, update the password in `scripts/init_db.sh` (if hardcoded)
+     and ensure the `DATABASE_URL` environment variable uses the same new password.
+
+10) Committing daily
+
+   Make a git commit on every day you changed anything, even if it doesn't fully work.
+   Example:
+
+   git add -A
+   git commit -m "YYYY-MM-DD: brief note about work done today"
+
+11) Want me to run any of these steps for you?
+
+   Reply which step(s) you allow me to run (git commit, migrations, start server, populate data).
