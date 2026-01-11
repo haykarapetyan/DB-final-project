@@ -71,7 +71,15 @@ def upgrade():
     )
 
 def downgrade():
+    # Drop tables/indexes in reverse order of creation
     op.drop_table('sessions')
+    op.drop_index(op.f('ix_subjects_name'), table_name='subjects')
     op.drop_table('subjects')
     op.drop_index(op.f('ix_groups_code'), table_name='groups')
     op.drop_table('groups')
+    op.drop_index(op.f('ix_teachers_name'), table_name='teachers')
+    op.drop_table('teachers')
+    op.drop_index(op.f('ix_departments_name'), table_name='departments')
+    op.drop_table('departments')
+    op.drop_index(op.f('ix_faculties_name'), table_name='faculties')
+    op.drop_table('faculties')
