@@ -20,7 +20,10 @@ def run_migrations_offline():
         context.run_migrations()
 
 def run_migrations_online():
-    config.set_main_option('sqlalchemy.url', os.environ.get('DATABASE_URL'))
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url:
+        # only set the option when a value exists (config expects strings)
+        config.set_main_option('sqlalchemy.url', str(db_url))
     connectable = engine_from_config(config.get_section(config.config_ini_section), prefix='sqlalchemy.', poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
